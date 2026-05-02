@@ -1,0 +1,27 @@
+name: Windows CRD
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 350
+
+    steps:
+    - name: Install Chrome
+      run: |
+        Invoke-WebRequest "https://dl.google.com/chrome/install/latest/chrome_installer.exe" -OutFile chrome.exe
+        Start-Process .\chrome.exe -ArgumentList "/silent", "/install" -Wait
+
+    - name: Install Chrome Remote Desktop Host
+      run: |
+        Invoke-WebRequest "https://dl.google.com/support/chrome/remote-desktop/chromeremotedesktophost.msi" -OutFile crdhost.msi
+        Start-Process msiexec.exe -ArgumentList "/i crdhost.msi /quiet /qn /norestart" -Wait
+
+    - name: Start CRD Host
+      run: |
+        & "C:\Program Files (x86)\Google\Chrome Remote Desktop\CurrentVersion\remoting_start_host.exe" --code="${{ secrets.CRD_CODE }}" --redirect-url="https://remotedesktop.google.com/_/oauthredirect" --name="GitHub-Windows"
+
+    - name: Done
+      run: echo "Go to https://remotedesktop.google.com/access to connect."
